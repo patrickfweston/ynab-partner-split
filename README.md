@@ -12,6 +12,8 @@ The extension assumes you **categorize your half** of shared spending to specifi
 - $20 → Groceries (your half)
 - $20 → Partner reimbursement category (e.g. "Nick Split Spending")
 
+<img src="images/social-ynab-split.png" alt="YNAB Partner Split" width="100%">
+
 ## How you use it
 
 You can split in two ways:
