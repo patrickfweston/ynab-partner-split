@@ -43,9 +43,9 @@ The extension should appear in your list and its icon will show in the Chrome to
 
 ### Step 3: Configure once
 
-**Get your YNAB key first:** Sign in at [app.ynab.com](https://app.ynab.com) → **Account Settings** (gear icon) → **Developer Settings** → under **Personal Access Tokens**, click **New Token**, enter your password, and copy the token. Treat it like a password and keep it private.
+**Get your YNAB key first:** Sign in at [app.ynab.com](https://app.ynab.com) → Click the dropdown arrow in the top left beside your budget's name **Account Settings** (person icon) → **Developer Settings** → under **Personal Access Tokens**, click **New Token**, enter your password, and copy the token it provides at the top of the page. Treat it like a password and keep it private. It will only be shown once.
 
-Then right‑click the extension icon → **Options**, and enter that token plus your budget, partner details, and categories (see [Configuration](#configuration) for the full list).
+Then, in Chrome, right‑click the extension icon → **Options**, and enter that token plus your budget, partner details, and categories (see [Configuration](#configuration) for the full list).
 
 ### Updating the extension
 
@@ -125,24 +125,6 @@ The extension finds all transactions in the **current month** with the chosen fl
 
 - **Lint:** `npm install` then `npm run lint`. Use `npm run lint:fix` to auto-fix where possible.
 - Code follows ESLint with `strict` mode, `eqeqeq`, `prefer-const`, and browser/webextensions env.
-
----
-
-## Distributing / Releasing
-
-**Building a .crx (optional)**  
-You may build and host a `.crx` for distribution or for your own releases:
-
-1. In Chrome, go to `chrome://extensions`.
-2. Turn on **Developer mode**, then click **Pack extension**.
-3. Choose the **Extension root directory** (this project folder). Leave **Private key file** blank the first time; Chrome will create a `.pem` and a `.crx`.
-4. The new `.crx` is the packaged extension. To **update** the .crx after code changes, run **Pack extension** again and point to the same `.pem` when prompted so the extension ID stays the same.
-
-**Notes**
-
-- **Do not** commit or publish the `.pem` file; it is your private signing key. The repo `.gitignore` already excludes `*.pem` and `*.crx`.
-- Packing a new `.crx` with the same key does **not** auto-update users who already have the extension installed. Auto-update only happens for extensions installed from the Chrome Web Store. For installs via “Load unpacked” or a .crx you host, users need to manually update (re-download and reload, or pull latest and reload).
-- Chrome often blocks or warns when users install a `.crx` downloaded from a website. The easiest path without using the Store is to point people to this repo (or a ZIP of it) and the [Install](#install-no-chrome-web-store) steps above.
 
 ---
 
