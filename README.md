@@ -2,7 +2,9 @@
 
 # YNAB Partner Split
 
-A Chrome extension (Manifest V3) that splits YNAB transactions 50/50 between a category for you and a partner reimbursement category. It works with the [YNAB API](https://api.ynab.com) and the YNAB web app at [app.ynab.com](https://app.ynab.com).
+A Chrome extension that splits YNAB transactions 50/50 between a category in your budget and a partner reimbursement category. Select rows in the register or flag transactions and process in bulk.
+
+<img src="images/social-ynab-split.png" alt="YNAB Partner Split" width="100%">
 
 ## Use case
 
@@ -11,8 +13,6 @@ The extension assumes you **categorize your half** of shared spending to specifi
 **Example:** A $40 grocery purchase becomes:
 - $20 → Groceries (your half)
 - $20 → Partner reimbursement category (e.g. "Nick Split Spending")
-
-<img src="images/social-ynab-split.png" alt="YNAB Partner Split" width="100%">
 
 ## How you use it
 
