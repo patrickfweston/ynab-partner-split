@@ -1,12 +1,21 @@
 # YNAB Partner Split
 
-A Chrome extension (Manifest V3) that integrates with the [YNAB API](https://api.ynab.com) to split selected transactions 50/50 between your category and a configurable partner reimbursement category.
+A Chrome extension (Manifest V3) that splits YNAB transactions 50/50 between a category for you and a partner reimbursement category. It works with the [YNAB API](https://api.ynab.com) and the YNAB web app at [app.ynab.com](https://app.ynab.com).
+
+## Use case
+
+The extension assumes you **categorize your half** of shared spending to specific categories (e.g. Groceries, Restaurants) and send **your partner’s half** into a single reimbursement category (e.g. “Nick Split” or “Partner reimbursement”). Your partner pays you back on a schedule, which brings that category balance back to zero. The extension does the splitting so both halves are categorized correctly and your budget stays accurate.
 
 **Example:** A $40 grocery purchase becomes:
 - $20 → Groceries (your half)
 - $20 → Partner reimbursement category (e.g. "Nick Split Spending")
 
-The extension runs on [app.ynab.com](https://app.ynab.com). You select one or more transactions in the YNAB UI, then use the popup to choose categories and split.
+## How you use it
+
+You can split in two ways:
+
+1. **Split selected rows** — In the YNAB register, select one or more transactions, then in the extension popup choose “Category for your half” and click **Split Selected Transactions**. Your half goes to the category you picked; the partner’s half goes to the reimbursement category you set in Options.
+2. **Split by flag** — Assign a category and a YNAB flag (e.g. purple) to transactions as you go. When you’re ready, open the popup, choose that flag, and click **Split Flagged Transactions**. The extension finds all flagged transactions in the current month that aren’t already split, splits each 50/50 using the existing category and the partner category, and removes the flag.
 
 <img src="images/popup.png" alt="Extension popup" width="400">
 
