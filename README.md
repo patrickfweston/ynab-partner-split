@@ -8,7 +8,7 @@ A Chrome extension (Manifest V3) that integrates with the [YNAB API](https://api
 
 The extension runs on [app.ynab.com](https://app.ynab.com). You select one or more transactions in the YNAB UI, then use the popup to choose categories and split.
 
-![Extension popup](images/popup.png)
+<img src="images/popup.png" alt="Extension popup" width="400">
 
 **Configuration** is on a separate options page: right‑click the extension icon → **Options**, or click **Configure extension…** in the popup.
 
@@ -20,10 +20,16 @@ You can install the extension in a few steps without publishing it to the Chrome
 
 ### Step 1: Get the extension files
 
-- **From GitHub:** Open the repo, click the green **Code** button, then **Download ZIP**. Unzip the file somewhere on your computer (e.g. Desktop or Documents).
-- **From a release:** If someone shared a ZIP of the extension, unzip it to a folder.
+**Recommended:** Use the latest release so you get a tested build.
 
-You need the **folder** that contains `manifest.json`, `popup.html`, `content.js`, and the other extension files (not the ZIP itself). If you downloaded from GitHub, the folder is usually named `ynab-partner-split` or `ynab-partner-split-main`.
+1. Go to the [Releases](https://github.com/patrickfweston/ynab-partner-split/releases) page for this repo.
+2. Open the **latest release** (e.g. v1.0.0).
+3. Download **Source code (zip)** from the assets at the bottom.
+4. Unzip the file somewhere on your computer (e.g. Desktop or Documents).
+
+Avoid using the green **Code** → **Download ZIP** button on the main branch; that gives you the current development code, which may be ahead of the latest release.
+
+You need the **folder** that contains `manifest.json`, `popup.html`, `content.js`, and the other extension files (not the ZIP itself). After unzipping a release, the folder is usually named `ynab-partner-split-1.0.0` or similar (it includes the version).
 
 ### Step 2: Load the extension in Chrome
 
@@ -43,7 +49,7 @@ Then right‑click the extension icon → **Options**, and enter that token plus
 
 ### Updating the extension
 
-There is no auto-update when you install this way. To get a new version: download the latest ZIP (or pull the latest code), replace the folder you used in Step 2 with the new one, then go to `chrome://extensions` and click the **Reload** button on the YNAB Partner Split card.
+There is no auto-update when you install this way. To get a new version: download **Source code (zip)** from the [latest release](https://github.com/patrickfweston/ynab-partner-split/releases), unzip it, replace the folder you used in Step 2 with the new one, then go to `chrome://extensions` and click the **Reload** button on the YNAB Partner Split card.
 
 ---
 
@@ -51,7 +57,7 @@ There is no auto-update when you install this way. To get a new version: downloa
 
 Open the extension **Options** (right‑click the extension icon → **Options**, or **Configure extension…** in the popup).
 
-![Options / configuration](images/options.png)
+<img src="images/options.png" alt="Options / configuration" width="400">
 
 Configure the following:
 
@@ -84,7 +90,7 @@ The **Category for your half** is chosen in the popup each time you split (for �
 1. Configure the extension once in **Options** (token, budget, partner name, default memo, partner reimbursement category).
 2. In YNAB, select the transaction(s) you want to split (e.g. check the boxes next to the rows).
 
-![Transaction list example in YNAB](images/transaction.png)
+<img src="images/transaction.png" alt="Transaction list example in YNAB" width="400">
 
 3. Open the extension popup, choose **Category for your half** (and optional memo), then click **Split Selected Transactions**.
 
