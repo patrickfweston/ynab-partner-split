@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "YNAB Partner Split",
+  "description": "Split selected YNAB transactions 50/50 between your category and a partner reimbursement category.",
+  "version": "1.0.0",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": [
+    "https://app.ynab.com/*",
+    "https://api.ynab.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "YNAB Partner Split"
+  },
+  "options_ui": {
+    "page": "options.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://app.ynab.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

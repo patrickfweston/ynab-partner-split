@@ -1,0 +1,13 @@
+{
+  "name": "ynab-partner-split",
+  "version": "1.0.0",
+  "description": "Chrome extension to split YNAB transactions 50/50 with a partner.",
+  "private": true,
+  "scripts": {
+    "lint": "eslint content.js popup.js options.js",
+    "lint:fix": "eslint content.js popup.js options.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  }
+}

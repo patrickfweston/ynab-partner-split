@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YNAB Partner Split – Options</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { max-width: 480px; padding: 20px; }
+    .options-saved { font-size: 12px; color: #2e7d32; margin-top: 8px; }
+    .field-checkbox { display: flex; flex-direction: column; gap: 0; }
+    .field-checkbox-heading { display: block; font-weight: 500; color: #444; margin-bottom: 2px; }
+    .field-checkbox .field-hint { display: block; font-size: 12px; color: #666; margin: 4px 0 6px 0; font-weight: 400; }
+    .field-checkbox-row { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 400; }
+    .field-checkbox-row input[type="checkbox"] { flex-shrink: 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>YNAB Partner Split – Configuration</h1>
+    <p class="muted">Set your YNAB API details and default categories. The popup lets you choose the category for your half each time you split.</p>
+
+    <section class="section config-section">
+      <h2>YNAB API</h2>
+      <div class="field">
+        <label for="ynab-token">Personal Access Token</label>
+        <input type="password" id="ynab-token" placeholder="From YNAB → Developer Settings">
+      </div>
+      <div class="field">
+        <label for="budget-id">Budget</label>
+        <select id="budget-id">
+          <option value="">— Set token, then load —</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="section config-section">
+      <h2>Partner & memo</h2>
+      <div class="field">
+        <label for="partner-name">Partner name</label>
+        <input type="text" id="partner-name" placeholder="e.g. Nick">
+      </div>
+      <div class="field">
+        <label for="default-memo">Default memo</label>
+        <input type="text" id="default-memo" placeholder="Split with {partner_name}">
+      </div>
+    </section>
+
+    <section class="section config-section">
+      <h2>Categories</h2>
+      <div class="field">
+        <label for="partner-category">Partner reimbursement category</label>
+        <select id="partner-category">
+          <option value="">— Set token & budget, then load —</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="section config-section">
+      <h2>Behavior</h2>
+      <div class="field">
+        <label for="default-flag">Default flag (for split by flag)</label>
+        <select id="default-flag">
+          <option value="red">Red</option>
+          <option value="orange">Orange</option>
+          <option value="yellow">Yellow</option>
+          <option value="green">Green</option>
+          <option value="blue">Blue</option>
+          <option value="purple">Purple</option>
+        </select>
+      </div>
+      <div class="field field-checkbox">
+        <span class="field-checkbox-heading">Reload YNAB tab after split</span>
+        <span class="field-hint" id="reload-after-split-hint">When enabled, the extension reloads the YNAB page after splitting so you see the updated transactions without refreshing manually.</span>
+        <label for="reload-after-split" class="field-checkbox-row">
+          <input type="checkbox" id="reload-after-split" checked aria-describedby="reload-after-split-hint" />
+      </div>
+    </section>
+
+    <div id="options-status" class="status" aria-live="polite"></div>
+    <div id="options-saved" class="options-saved hidden">Settings saved.</div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
