@@ -1,3 +1,5 @@
+<img src="images/logo.png" alt="YNAB Partner Split" height="100">
+
 # YNAB Partner Split
 
 A Chrome extension (Manifest V3) that splits YNAB transactions 50/50 between a category for you and a partner reimbursement category. It works with the [YNAB API](https://api.ynab.com) and the YNAB web app at [app.ynab.com](https://app.ynab.com).
