@@ -6,7 +6,9 @@ A Chrome extension (Manifest V3) that integrates with the [YNAB API](https://api
 - $20 → Groceries (your half)
 - $20 → Partner reimbursement category (e.g. "Nick Split Spending")
 
-The extension runs on [app.ynab.com](https://app.ynab.com). You select one or more transactions in the YNAB UI, then choose the **Partner reimbursement category** in the popup and click **Split Selected Transactions**.
+The extension runs on [app.ynab.com](https://app.ynab.com). You select one or more transactions in the YNAB UI, then use the popup to choose categories and split.
+
+![Extension popup](images/popup.png)
 
 **Configuration** is on a separate options page: right‑click the extension icon → **Options**, or click **Configure extension…** in the popup.
 
@@ -47,22 +49,31 @@ There is no auto-update when you install this way. To get a new version: downloa
 
 ## Configuration
 
-Open the extension **Options** (right‑click the extension icon → **Options**, or **Configure extension…** in the popup). Set:
+Open the extension **Options** (right‑click the extension icon → **Options**, or **Configure extension…** in the popup).
 
-**YNAB API**
-- **Personal Access Token** — From YNAB: Account Settings → Developer Settings → New Token. Keep it private.
-- **Budget** — Select from the dropdown (loaded from YNAB).
+![Options / configuration](images/options.png)
 
-**Partner & memo**
-- **Partner name** — e.g. Nick (used in the default memo and in the `{partner_name}` placeholder).
-- **Default memo** — e.g. `Split with {partner_name}`. Used for all split transactions unless you override it in the popup.
+Configure the following:
 
-**Categories**
-- **Partner reimbursement category** — Category for the partner’s half (dropdown from YNAB). Required for both “split selected rows” and “split by flag.”
+**Personal Access Token**  
+Your YNAB API token. Get it from [app.ynab.com](https://app.ynab.com) → Account Settings (gear) → Developer Settings → Personal Access Tokens → **New Token** (you’ll enter your YNAB password). Paste the token into the Options page. Treat it like a password and keep it private.
 
-**Behavior**
-- **Default flag (for split by flag)** — Which YNAB flag color to look for when you use “Split by flag” (Red, Orange, Yellow, Green, Blue, or Purple). This is the option preselected in the popup; you can change it in the popup for a one-off run.
-- **Reload YNAB tab after split** — When enabled, the extension reloads the YNAB page after splitting so you see updated transactions without refreshing manually.
+**Budget**  
+The YNAB budget the extension will use. The dropdown is filled from YNAB using your token; select the budget you want to split transactions in (e.g. “My Budget” or “Shared with Nick”).
+
+**Partner name**  
+Your partner’s name (e.g. Nick). It’s used in the default memo and in the `{partner_name}` placeholder so memos can say “Split with Nick.” You can also set a **Default memo** (e.g. `Split with {partner_name}`) in Options; it’s used for all splits unless you type something else in the popup.
+
+**Default partner reimbursement category**  
+The category where the partner’s half of each split goes (e.g. “Nick reimbursement” or “Partner split”). The dropdown lists your budget’s categories from YNAB. This is required for both “split selected rows” and “split by flag.”
+
+**Default flag (for split-by-flag)**  
+When you use **Split by flag**, the extension looks for transactions with a specific YNAB flag color. Here you choose the **default** color (Red, Orange, Yellow, Green, Blue, or Purple). That option is preselected in the popup each time; you can still change it in the popup for a single run (e.g. usually Purple, sometimes Blue).
+
+**Reload YNAB tab after split**  
+Checkbox. When **checked**, the extension reloads the YNAB tab after splitting so you see the updated transactions right away. When **unchecked**, the tab is not reloaded (you can refresh manually, or the extension can highlight the changed rows if you have that on).
+
+---
 
 The **Category for your half** is chosen in the popup each time you split (for “split selected rows”). For “split by flag,” the extension uses each transaction’s existing category as your half.
 
@@ -71,7 +82,10 @@ The **Category for your half** is chosen in the popup each time you split (for �
 ## Usage
 
 1. Configure the extension once in **Options** (token, budget, partner name, default memo, partner reimbursement category).
-2. In YNAB, select the transaction(s) you want to split.
+2. In YNAB, select the transaction(s) you want to split (e.g. check the boxes next to the rows).
+
+![Transaction list example in YNAB](images/transaction.png)
+
 3. Open the extension popup, choose **Category for your half** (and optional memo), then click **Split Selected Transactions**.
 
 The extension will, for each selected transaction:
