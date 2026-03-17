@@ -1,7 +1,7 @@
 /* YNAB Partner Split - Popup styles */
 
 body {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   font-size: 13px;
   margin: 0;
   padding: 0;
@@ -19,14 +19,14 @@ h1 {
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 12px 0;
-  color: #1a1a1a;
+  color: #551EE3;
 }
 
 h2 {
   font-size: 0.85rem;
   font-weight: 600;
   margin: 10px 0 6px 0;
-  color: #555;
+  color: #551EE3;
 }
 
 .section {
@@ -36,7 +36,7 @@ h2 {
 .section-title {
   font-size: 0.9rem;
   margin: 0 0 6px 0;
-  color: #333;
+  color: #551EE3;
 }
 
 .section-desc {
@@ -68,6 +68,7 @@ h2 {
 
 .field input,
 .field select {
+  font-family: 'Poppins', sans-serif;
   width: 100%;
   box-sizing: border-box;
   padding: 6px 8px;
@@ -79,8 +80,8 @@ h2 {
 .field input:focus,
 .field select:focus {
   outline: none;
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+  border-color: #551EE3;
+  box-shadow: 0 0 0 2px rgba(85, 30, 227, 0.25);
 }
 
 .field input[type="checkbox"] {
@@ -94,24 +95,26 @@ h2 {
   display: block;
   text-align: left;
   font-size: 12px;
-  color: #104810;
+  color: #555;
   margin-top: 4px;
 }
 
 .btn {
+  font-family: 'Poppins', sans-serif;
   margin-top: 10px;
   padding: 8px 14px;
   font-size: 13px;
   font-weight: 500;
   color: #fff;
-  background: #2e7d32;
+  background: #551EE3;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .btn:hover:not(:disabled) {
-  background: #1b5e20;
+  background: #93D768;
+  color: #1a1a1a;
 }
 
 .btn:disabled {
@@ -137,7 +140,7 @@ h2 {
 
 .loading {
   font-size: 12px;
-  color: #2e7d32;
+  color: #551EE3;
   margin-top: 4px;
 }
 
@@ -157,10 +160,11 @@ h2 {
 }
 
 .popup-options-link a {
-  color: #2e7d32;
+  color: #551EE3;
   text-decoration: none;
 }
 
 .popup-options-link a:hover {
+  color: #93D768;
   text-decoration: underline;
 }
