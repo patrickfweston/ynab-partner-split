@@ -63,6 +63,13 @@
         </select>
       </div>
       <div class="field field-checkbox">
+        <span class="field-checkbox-heading">Append to existing memo</span>
+        <span class="field-hint" id="append-to-memo-hint">When enabled, the split memo is added after any existing memo (with a comma). When disabled, the split memo replaces the existing memo. Default: append.</span>
+        <label for="append-to-memo" class="field-checkbox-row">
+          <input type="checkbox" id="append-to-memo" checked aria-describedby="append-to-memo-hint" />
+        </label>
+      </div>
+      <div class="field field-checkbox">
         <span class="field-checkbox-heading">Reload YNAB tab after split</span>
         <span class="field-hint" id="reload-after-split-hint">When enabled, the extension reloads the YNAB page after splitting so you see the updated transactions without refreshing manually.</span>
         <label for="reload-after-split" class="field-checkbox-row">

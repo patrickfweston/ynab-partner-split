@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   partnerCategoryId: 'partnerCategoryId',
   splits: 'splits',
   defaultMemo: 'defaultMemo',
+  appendToMemo: 'appendToMemo',
   userCategoryId: 'userCategoryId',
   reloadAfterSplit: 'reloadAfterSplit',
   splitFlagColor: 'splitFlagColor',
@@ -53,6 +54,7 @@ async function loadSettings() {
     budgetId: result[STORAGE_KEYS.budgetId] ?? '',
     defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_names}',
     splits,
+    appendToMemo: result[STORAGE_KEYS.appendToMemo] !== false,
     userCategoryId: result[STORAGE_KEYS.userCategoryId] ?? '',
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
@@ -210,6 +212,20 @@ function formatMemo(template, splits) {
 }
 
 /**
+ * Apply memo behavior: append to existing or overwrite.
+ * @param {string} ourMemo - The split memo from the popup/default.
+ * @param {string|null|undefined} existingMemo - The transaction's current memo.
+ * @param {boolean} appendToMemo - If true, prepend existing memo + ", " when non-empty.
+ * @returns {string}
+ */
+function applyMemoBehavior(ourMemo, existingMemo, appendToMemo) {
+  if (appendToMemo && existingMemo !== null && existingMemo !== undefined && String(existingMemo).trim() !== '') {
+    return String(existingMemo).trim() + ', ' + ourMemo;
+  }
+  return ourMemo;
+}
+
+/**
  * Split amount into numParties equal parts (YNAB milliunits). Sum of returned array equals amount.
  * @param {number} amount
  * @param {number} numParties
@@ -279,13 +295,14 @@ async function splitFlaggedTransactions() {
 
     const numParties = validSplits.length + 1;
     const defaultMemoFormatted = formatMemo(settings.defaultMemo, validSplits);
-    const memo = els.memo && els.memo.value.trim() ? els.memo.value.trim() : defaultMemoFormatted;
+    const ourMemo = els.memo && els.memo.value.trim() ? els.memo.value.trim() : defaultMemoFormatted;
     let successCount = 0;
     const splitIds = [];
     let firstError = null;
 
     for (const tx of toSplit) {
       try {
+        const memo = applyMemoBehavior(ourMemo, tx.memo, settings.appendToMemo);
         const amount = tx.amount;
         const amounts = splitAmount(amount, numParties);
         const subtransactions = [
@@ -375,7 +392,7 @@ async function splitSelectedTransactions() {
 
     const numParties = validSplits.length + 1;
     const defaultMemoFormatted = formatMemo(settings.defaultMemo, validSplits);
-    const memo = els.memo.value.trim() || defaultMemoFormatted;
+    const ourMemo = els.memo.value.trim() || defaultMemoFormatted;
     let successCount = 0;
     const splitIds = [];
     let firstError = null;
@@ -390,6 +407,7 @@ async function splitSelectedTransactions() {
         if (transaction.subtransactions?.length > 0) continue;
         if (transaction.amount === 0) continue;
 
+        const memo = applyMemoBehavior(ourMemo, transaction.memo, settings.appendToMemo);
         const amount = transaction.amount;
         const amounts = splitAmount(amount, numParties);
         const subtransactions = [

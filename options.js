@@ -13,6 +13,7 @@ const STORAGE_KEYS = {
   defaultMemo: 'defaultMemo',
   partnerCategoryId: 'partnerCategoryId',
   splits: 'splits',
+  appendToMemo: 'appendToMemo',
   reloadAfterSplit: 'reloadAfterSplit',
   splitFlagColor: 'splitFlagColor',
 };
@@ -29,6 +30,7 @@ function initElements() {
     budgetId: document.getElementById('budget-id'),
     defaultMemo: document.getElementById('default-memo'),
     defaultFlag: document.getElementById('default-flag'),
+    appendToMemo: document.getElementById('append-to-memo'),
     reloadAfterSplit: document.getElementById('reload-after-split'),
     splitsList: document.getElementById('splits-list'),
     addSplitBtn: document.getElementById('add-split-btn'),
@@ -53,6 +55,7 @@ async function loadSettings() {
     budgetId: result[STORAGE_KEYS.budgetId] ?? '',
     defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_names}',
     splits,
+    appendToMemo: result[STORAGE_KEYS.appendToMemo] !== false,
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
   };
@@ -267,6 +270,7 @@ async function init() {
 
   els.ynabToken.value = settings.ynabToken;
   els.defaultMemo.value = settings.defaultMemo;
+  if (els.appendToMemo) els.appendToMemo.checked = settings.appendToMemo !== false;
   if (els.reloadAfterSplit) els.reloadAfterSplit.checked = settings.reloadAfterSplit !== false;
   if (els.defaultFlag) els.defaultFlag.value = FLAG_COLORS.includes(settings.splitFlagColor) ? settings.splitFlagColor : 'purple';
 
@@ -289,6 +293,12 @@ async function init() {
   if (els.defaultFlag) {
     els.defaultFlag.addEventListener('change', async () => {
       await saveSettings({ splitFlagColor: els.defaultFlag.value });
+      showSaved(true);
+    });
+  }
+  if (els.appendToMemo) {
+    els.appendToMemo.addEventListener('change', async () => {
+      await saveSettings({ appendToMemo: els.appendToMemo.checked });
       showSaved(true);
     });
   }
