@@ -2,24 +2,29 @@
 
 # YNAB Partner Split
 
-A Chrome extension that splits YNAB transactions 50/50 between a category in your budget and a partner reimbursement category. Select rows in the register or flag transactions and process in bulk.
+A Chrome extension that splits YNAB transactions equally between your category and one or more partner reimbursement categories. Add multiple splits (e.g. Partner A, Partner B) and each transaction is divided evenly among all parties. Select rows in the register or flag transactions and process in bulk.
 
 <img src="images/social-ynab-split.png" alt="YNAB Partner Split" width="100%">
 
 ## Use case
 
-The extension assumes you **categorize your half** of shared spending to specific categories (e.g. Groceries, Restaurants) and send **your partner’s half** into a single reimbursement category (e.g. “Nick Split” or “Partner reimbursement”). Your partner pays you back on a schedule, which brings that category balance back to zero. The extension does the splitting so both halves are categorized correctly and your budget stays accurate.
+The extension assumes you **categorize your share** of shared spending to specific categories (e.g. Groceries, Restaurants) and send **each partner's share** into their own reimbursement category (e.g. “Nick Split” or “Partner reimbursement”). Your partners pay you back on a schedule, which brings those category balances back to zero. The extension does the splitting so every share is categorized correctly and your budget stays accurate.
 
-**Example:** A $40 grocery purchase becomes:
-- $20 → Groceries (your half)
+**Example (one partner, 50/50):** A $40 grocery purchase becomes:
+- $20 → Groceries (your share)
 - $20 → Partner reimbursement category (e.g. "Nick Split Spending")
+
+**Example (two partners, thirds):** A $60 dinner becomes:
+- $20 → Restaurants (your share)
+- $20 → Partner A reimbursement category
+- $20 → Partner B reimbursement category
 
 ## How you use it
 
 You can split in two ways:
 
-1. **Split selected rows** — In the YNAB register, select one or more transactions, then in the extension popup choose “Category for your half” and click **Split Selected Transactions**. Your half goes to the category you picked; the partner’s half goes to the reimbursement category you set in Options.
-2. **Split by flag** — Assign a category and a YNAB flag (e.g. purple) to transactions as you go. When you’re ready, open the popup, choose that flag, and click **Split Flagged Transactions**. The extension finds all flagged transactions in the current month that aren’t already split, splits each 50/50 using the existing category and the partner category, and removes the flag.
+1. **Split selected rows** — In the YNAB register, select one or more transactions, then in the extension popup choose “Category for your share” and click **Split Selected Transactions**. Your share goes to the category you picked; each partner's share goes to the reimbursement category you set for that split in Options. The amount is divided equally among you and all configured splits.
+2. **Split by flag** — Assign a category and a YNAB flag (e.g. purple) to transactions as you go. When you're ready, open the popup, choose that flag, and click **Split Flagged Transactions**. The extension finds all flagged transactions in the current month that aren't already split, splits each equally between the existing category and every partner's category, and removes the flag.
 
 <img src="images/popup.png" alt="Extension popup" width="400">
 
@@ -58,7 +63,7 @@ The extension should appear in your list and its icon will show in the Chrome to
 
 **Get your YNAB key first:** Sign in at [app.ynab.com](https://app.ynab.com) → Click the dropdown arrow in the top left beside your budget's name **Account Settings** (person icon) → **Developer Settings** → under **Personal Access Tokens**, click **New Token**, enter your password, and copy the token it provides at the top of the page. Treat it like a password and keep it private. It will only be shown once.
 
-Then, in Chrome, right‑click the extension icon → **Options**, and enter that token plus your budget, partner details, and categories (see [Configuration](#configuration) for the full list).
+Then, in Chrome, right‑click the extension icon → **Options**, and enter that token plus your budget, splits (name + category per partner), and default memo (see [Configuration](#configuration) for the full list).
 
 ### Updating the extension
 
@@ -75,16 +80,16 @@ Open the extension **Options** (right‑click the extension icon → **Options**
 Configure the following:
 
 **Personal Access Token**  
-Your YNAB API token. Get it from [app.ynab.com](https://app.ynab.com) → Account Settings (gear) → Developer Settings → Personal Access Tokens → **New Token** (you’ll enter your YNAB password). Paste the token into the Options page. Treat it like a password and keep it private.
+Your YNAB API token. Get it from [app.ynab.com](https://app.ynab.com) → Account Settings (gear) → Developer Settings → Personal Access Tokens → **New Token** (you'll enter your YNAB password). Paste the token into the Options page. Treat it like a password and keep it private.
 
 **Budget**  
 The YNAB budget the extension will use. The dropdown is filled from YNAB using your token; select the budget you want to split transactions in (e.g. “My Budget” or “Shared with Nick”).
 
-**Partner name**  
-Your partner’s name (e.g. Nick). It’s used in the default memo and in the `{partner_name}` placeholder so memos can say “Split with Nick.” You can also set a **Default memo** (e.g. `Split with {partner_name}`) in Options; it’s used for all splits unless you type something else in the popup.
+**Splits**  
+A list of partners (or any parties) to split with. For each split you set a **name** (e.g. "Partner A", "Nick") and a **reimbursement category** where that party's share goes. Use **Add split** to add a row and **Remove** to remove one. You need at least one split with a category set to use the extension. With one split, the transaction is split 50/50 (you + one partner). With two splits, it's split in thirds, and so on.
 
-**Default partner reimbursement category**  
-The category where the partner’s half of each split goes (e.g. “Nick reimbursement” or “Partner split”). The dropdown lists your budget’s categories from YNAB. This is required for both “split selected rows” and “split by flag.”
+**Default memo**  
+Used for all split transactions unless you type something else in the popup. Use `{partner_names}` in the memo and it will be replaced with the comma-separated list of split names (e.g. "Split with Partner A, Partner B"). For a single split you can use `{partner_name}` to get just that name.
 
 **Default flag (for split-by-flag)**  
 When you use **Split by flag**, the extension looks for transactions with a specific YNAB flag color. Here you choose the **default** color (Red, Orange, Yellow, Green, Blue, or Purple). That option is preselected in the popup each time; you can still change it in the popup for a single run (e.g. usually Purple, sometimes Blue).
@@ -94,25 +99,25 @@ Checkbox. When **checked**, the extension reloads the YNAB tab after splitting s
 
 ---
 
-The **Category for your half** is chosen in the popup each time you split (for “split selected rows”). For “split by flag,” the extension uses each transaction’s existing category as your half.
+The **Category for your share** is chosen in the popup each time you split (for “split selected rows”). For “split by flag,” the extension uses each transaction's existing category as your share.
 
 ---
 
 ## Usage
 
-1. Configure the extension once in **Options** (token, budget, partner name, default memo, partner reimbursement category).
+1. Configure the extension once in **Options** (token, budget, at least one split with name and category, default memo).
 2. In YNAB, select the transaction(s) you want to split (e.g. check the boxes next to the rows).
 
 <img src="images/transaction.png" alt="Transaction list example in YNAB" width="400">
 
-3. Open the extension popup, choose **Category for your half** (and optional memo), then click **Split Selected Transactions**.
+3. Open the extension popup, choose **Category for your share** (and optional memo), then click **Split Selected Transactions**.
 
 The extension will, for each selected transaction:
 
 - Fetch the transaction from the API.
 - Skip it if it already has subtransactions or amount is zero.
-- Split the amount in half (handling odd milliunits so the two halves sum to the original).
-- Update the transaction to a split: your half to the chosen category, the other half to the partner reimbursement category, with the memo you set.
+- Split the amount equally among you and all configured splits (e.g. 50/50 with one split, thirds with two splits), handling odd milliunits so the parts sum to the original.
+- Update the transaction to a split: your share to the chosen category, each partner's share to their reimbursement category, with the memo you set.
 
 ### Split by flag
 
@@ -122,7 +127,7 @@ You can also split transactions by YNAB flag (e.g. purple for “Split with Nick
 2. In YNAB, assign a category to each transaction and add that flag.
 3. In the popup, open the **Split by flag** section. The **Flag to split** dropdown is preselected from your default; change it if you want a different color for this run. Click **Split Flagged Transactions**.
 
-The extension finds all transactions in the **current month** with the chosen flag that are not already split and have a category. Each is split 50/50 between that **existing category** and the partner reimbursement category, the flag is removed, and the memo is applied.
+The extension finds all transactions in the **current month** with the chosen flag that are not already split and have a category. Each is split equally between that **existing category** and every partner's reimbursement category, the flag is removed, and the memo is applied.
 
 ---
 

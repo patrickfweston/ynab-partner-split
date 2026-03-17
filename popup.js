@@ -1,6 +1,7 @@
 /**
  * YNAB Partner Split - Popup script
- * Shows category for your half + memo + Split button. Partner reimbursement category comes from options (storage).
+ * Shows category for your share + memo + Split button. Splits (name + category per partner) come from options (storage).
+ * Transaction is split equally among your category and each partner's reimbursement category.
  */
 'use strict';
 
@@ -11,6 +12,7 @@ const STORAGE_KEYS = {
   budgetId: 'budgetId',
   partnerName: 'partnerName',
   partnerCategoryId: 'partnerCategoryId',
+  splits: 'splits',
   defaultMemo: 'defaultMemo',
   userCategoryId: 'userCategoryId',
   reloadAfterSplit: 'reloadAfterSplit',
@@ -37,12 +39,20 @@ function initElements() {
 
 async function loadSettings() {
   const result = await chrome.storage.sync.get(Object.values(STORAGE_KEYS));
+  let splits = result[STORAGE_KEYS.splits];
+  if (Array.isArray(splits)) {
+    splits = splits.map((s) => ({ name: (s && s.name) || '', categoryId: (s && s.categoryId) || '' }));
+  } else {
+    splits = [];
+  }
+  if (splits.length === 0 && result[STORAGE_KEYS.partnerCategoryId]) {
+    splits = [{ name: result[STORAGE_KEYS.partnerName] || 'Partner', categoryId: result[STORAGE_KEYS.partnerCategoryId] }];
+  }
   return {
     ynabToken: result[STORAGE_KEYS.ynabToken] ?? '',
     budgetId: result[STORAGE_KEYS.budgetId] ?? '',
-    partnerName: result[STORAGE_KEYS.partnerName] ?? '',
-    partnerCategoryId: result[STORAGE_KEYS.partnerCategoryId] ?? '',
-    defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_name}',
+    defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_names}',
+    splits,
     userCategoryId: result[STORAGE_KEYS.userCategoryId] ?? '',
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
@@ -184,14 +194,37 @@ async function getSelectedTransactionIds() {
   }
 }
 
-function formatMemo(template, partnerName) {
-  return (template || '').replace(/\{partner_name\}/gi, partnerName || '');
+/**
+ * @param {string} template
+ * @param {{ name: string, categoryId: string }[]} splits
+ */
+function formatMemo(template, splits) {
+  if (!template) return '';
+  const partnerNames = Array.isArray(splits) && splits.length > 0
+    ? splits.map((s) => s.name).filter(Boolean).join(', ') || ''
+    : '';
+  const partnerName = Array.isArray(splits) && splits.length > 0 ? (splits[0].name || '') : '';
+  return template
+    .replace(/\{partner_names\}/gi, partnerNames)
+    .replace(/\{partner_name\}/gi, partnerName);
 }
 
-function splitAmount(amount) {
-  const userHalf = Math.floor(amount / 2);
-  const partnerHalf = amount - userHalf;
-  return { userHalf, partnerHalf };
+/**
+ * Split amount into numParties equal parts (YNAB milliunits). Sum of returned array equals amount.
+ * @param {number} amount
+ * @param {number} numParties
+ * @returns {number[]}
+ */
+function splitAmount(amount, numParties) {
+  if (numParties <= 0) return [];
+  if (numParties === 1) return [amount];
+  const base = Math.floor(amount / numParties);
+  const remainder = amount - base * numParties;
+  const amounts = [];
+  for (let i = 0; i < numParties; i++) {
+    amounts.push(base + (i < remainder ? 1 : 0));
+  }
+  return amounts;
 }
 
 /** First day of current month in YYYY-MM-DD for fetching transactions. */
@@ -207,12 +240,13 @@ async function splitFlaggedTransactions() {
   const settings = await loadSettings();
   const flagColor = els.flagColor ? els.flagColor.value.trim() : (settings.splitFlagColor || 'purple');
 
+  const validSplits = (settings.splits || []).filter((s) => s.categoryId);
   if (!settings.ynabToken || !settings.budgetId) {
     showStatus('Configure the extension first (click "Configure extension…").', true);
     return;
   }
-  if (!settings.partnerCategoryId) {
-    showStatus('Set "Partner reimbursement category" in the extension options.', true);
+  if (validSplits.length === 0) {
+    showStatus('Add at least one split with a category in the extension options.', true);
     return;
   }
   if (!flagColor || !FLAG_COLORS.includes(flagColor)) {
@@ -243,7 +277,8 @@ async function splitFlaggedTransactions() {
       return;
     }
 
-    const defaultMemoFormatted = formatMemo(settings.defaultMemo, settings.partnerName);
+    const numParties = validSplits.length + 1;
+    const defaultMemoFormatted = formatMemo(settings.defaultMemo, validSplits);
     const memo = els.memo && els.memo.value.trim() ? els.memo.value.trim() : defaultMemoFormatted;
     let successCount = 0;
     const splitIds = [];
@@ -252,16 +287,17 @@ async function splitFlaggedTransactions() {
     for (const tx of toSplit) {
       try {
         const amount = tx.amount;
-        const { userHalf, partnerHalf } = splitAmount(amount);
+        const amounts = splitAmount(amount, numParties);
+        const subtransactions = [
+          { amount: amounts[0], category_id: tx.category_id },
+          ...validSplits.map((s, i) => ({ amount: amounts[i + 1], category_id: s.categoryId })),
+        ];
         const body = {
           category_id: null,
           memo,
           approved: true,
           flag_color: null,
-          subtransactions: [
-            { amount: userHalf, category_id: tx.category_id },
-            { amount: partnerHalf, category_id: settings.partnerCategoryId },
-          ],
+          subtransactions,
         };
         await updateTransaction(settings.budgetId, tx.id, body, settings.ynabToken);
         successCount++;
@@ -311,12 +347,13 @@ async function splitSelectedTransactions() {
     showStatus('Configure the extension first (click “Configure extension…”).', true);
     return;
   }
-  if (!settings.partnerCategoryId) {
-    showStatus('Set "Partner reimbursement category" in the extension options.', true);
+  const validSplits = (settings.splits || []).filter((s) => s.categoryId);
+  if (validSplits.length === 0) {
+    showStatus('Add at least one split with a category in the extension options.', true);
     return;
   }
   if (!userCategoryId) {
-    showStatus('Select the category for your half.', true);
+    showStatus('Select the category for your share.', true);
     return;
   }
 
@@ -336,7 +373,8 @@ async function splitSelectedTransactions() {
       return;
     }
 
-    const defaultMemoFormatted = formatMemo(settings.defaultMemo, settings.partnerName);
+    const numParties = validSplits.length + 1;
+    const defaultMemoFormatted = formatMemo(settings.defaultMemo, validSplits);
     const memo = els.memo.value.trim() || defaultMemoFormatted;
     let successCount = 0;
     const splitIds = [];
@@ -353,16 +391,16 @@ async function splitSelectedTransactions() {
         if (transaction.amount === 0) continue;
 
         const amount = transaction.amount;
-        const { userHalf, partnerHalf } = splitAmount(amount);
-
+        const amounts = splitAmount(amount, numParties);
+        const subtransactions = [
+          { amount: amounts[0], category_id: userCategoryId },
+          ...validSplits.map((s, i) => ({ amount: amounts[i + 1], category_id: s.categoryId })),
+        ];
         const body = {
           category_id: null,
           memo,
           approved: true,
-          subtransactions: [
-            { amount: userHalf, category_id: userCategoryId },
-            { amount: partnerHalf, category_id: settings.partnerCategoryId },
-          ],
+          subtransactions,
         };
         await updateTransaction(settings.budgetId, transactionId, body, settings.ynabToken);
         successCount++;
@@ -422,27 +460,28 @@ async function init() {
     return;
   }
 
+  const hasValidSplits = (settings.splits || []).some((s) => s.categoryId);
   try {
     const categories = await fetchCategories(settings.budgetId, settings.ynabToken);
     fillCategorySelect(els.userCategory, categories, settings.userCategoryId, '— Select category —');
-    els.memo.value = formatMemo(settings.defaultMemo, settings.partnerName);
-    setSplitButtonEnabled(!!settings.partnerCategoryId);
-    if (!settings.partnerCategoryId) {
-      showStatus('Set "Partner reimbursement category" in Options.', true);
+    els.memo.value = formatMemo(settings.defaultMemo, settings.splits || []);
+    setSplitButtonEnabled(hasValidSplits);
+    if (!hasValidSplits) {
+      showStatus('Add at least one split in Options.', true);
     }
   } catch (e) {
     fillCategorySelect(els.userCategory, [], '', '— Error loading categories —');
     showStatus(e instanceof Error ? e.message : 'Failed to load categories', true);
   }
 
-  if (els.splitFlaggedBtn) els.splitFlaggedBtn.disabled = !settings.partnerCategoryId;
+  if (els.splitFlaggedBtn) els.splitFlaggedBtn.disabled = !hasValidSplits;
 
   if (els.flagColor) {
     fillFlagSelect(els.flagColor, settings.splitFlagColor || 'purple');
     els.flagColor.addEventListener('change', () => saveSettings({ splitFlagColor: els.flagColor.value }));
   }
   if (els.splitFlaggedBtn) {
-    els.splitFlaggedBtn.disabled = !settings.partnerCategoryId;
+    els.splitFlaggedBtn.disabled = !hasValidSplits;
     els.splitFlaggedBtn.addEventListener('click', splitFlaggedTransactions);
   }
 

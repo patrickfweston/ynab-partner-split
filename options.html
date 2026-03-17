@@ -21,7 +21,7 @@
 <body>
   <div class="container">
     <h1>YNAB Partner Split – Configuration</h1>
-    <p class="muted">Set your YNAB API details and default categories. The popup lets you choose the category for your half each time you split.</p>
+    <p class="muted">Set your YNAB API details and splits. Each split is another party; the transaction is divided equally among your category and each split's category. The popup lets you choose the category for your share each time you split.</p>
 
     <section class="section config-section">
       <h2>YNAB API</h2>
@@ -38,24 +38,14 @@
     </section>
 
     <section class="section config-section">
-      <h2>Partner & memo</h2>
-      <div class="field">
-        <label for="partner-name">Partner name</label>
-        <input type="text" id="partner-name" placeholder="e.g. Nick">
-      </div>
-      <div class="field">
+      <h2>Splits</h2>
+      <p class="section-desc">Add one or more splits (e.g. Partner A, Partner B). The transaction is split equally among your category and each split's reimbursement category.</p>
+      <div id="splits-list" class="splits-list"></div>
+      <button type="button" class="btn btn-secondary" id="add-split-btn">Add split</button>
+      <div class="field" style="margin-top: 16px;">
         <label for="default-memo">Default memo</label>
-        <input type="text" id="default-memo" placeholder="Split with {partner_name}">
-      </div>
-    </section>
-
-    <section class="section config-section">
-      <h2>Categories</h2>
-      <div class="field">
-        <label for="partner-category">Partner reimbursement category</label>
-        <select id="partner-category">
-          <option value="">— Set token & budget, then load —</option>
-        </select>
+        <input type="text" id="default-memo" placeholder="Split with {partner_names}" aria-describedby="default-memo-hint">
+        <span id="default-memo-hint" class="field-hint">Use {partner_names} for the list of split names, or {partner_name} for a single split.</span>
       </div>
     </section>
 

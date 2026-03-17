@@ -1,6 +1,6 @@
 /**
  * YNAB Partner Split - Options page
- * Persists token, budget ID, partner name, default memo, and partner reimbursement category.
+ * Persists token, budget ID, splits (name + category per partner), default memo, and behavior options.
  */
 'use strict';
 
@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   partnerName: 'partnerName',
   defaultMemo: 'defaultMemo',
   partnerCategoryId: 'partnerCategoryId',
+  splits: 'splits',
   reloadAfterSplit: 'reloadAfterSplit',
   splitFlagColor: 'splitFlagColor',
 };
@@ -19,16 +20,18 @@ const STORAGE_KEYS = {
 const FLAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
 
 let els = {};
+/** @type {{ id: string, name: string, groupName?: string }[]} */
+let categoriesCache = [];
 
 function initElements() {
   els = {
     ynabToken: document.getElementById('ynab-token'),
     budgetId: document.getElementById('budget-id'),
-    partnerName: document.getElementById('partner-name'),
     defaultMemo: document.getElementById('default-memo'),
-    partnerCategory: document.getElementById('partner-category'),
     defaultFlag: document.getElementById('default-flag'),
     reloadAfterSplit: document.getElementById('reload-after-split'),
+    splitsList: document.getElementById('splits-list'),
+    addSplitBtn: document.getElementById('add-split-btn'),
     optionsStatus: document.getElementById('options-status'),
     optionsSaved: document.getElementById('options-saved'),
   };
@@ -36,12 +39,20 @@ function initElements() {
 
 async function loadSettings() {
   const result = await chrome.storage.sync.get(Object.values(STORAGE_KEYS));
+  let splits = result[STORAGE_KEYS.splits];
+  if (Array.isArray(splits)) {
+    splits = splits.map((s) => ({ name: (s && s.name) || '', categoryId: (s && s.categoryId) || '' }));
+  } else {
+    splits = [];
+  }
+  if (splits.length === 0 && result[STORAGE_KEYS.partnerCategoryId]) {
+    splits = [{ name: result[STORAGE_KEYS.partnerName] || 'Partner', categoryId: result[STORAGE_KEYS.partnerCategoryId] }];
+  }
   return {
     ynabToken: result[STORAGE_KEYS.ynabToken] ?? '',
     budgetId: result[STORAGE_KEYS.budgetId] ?? '',
-    partnerName: result[STORAGE_KEYS.partnerName] ?? '',
-    defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_name}',
-    partnerCategoryId: result[STORAGE_KEYS.partnerCategoryId] ?? '',
+    defaultMemo: result[STORAGE_KEYS.defaultMemo] ?? 'Split with {partner_names}',
+    splits,
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
   };
@@ -149,35 +160,117 @@ async function loadBudgets() {
   }
 }
 
+/** In-memory splits array; single source of truth for the UI. */
+let splitsData = [];
+
+function getSplitsFromDOM() {
+  const rows = els.splitsList.querySelectorAll('.split-row');
+  const result = [];
+  for (const row of rows) {
+    const nameEl = row.querySelector('.split-name');
+    const categoryEl = row.querySelector('.split-category');
+    if (nameEl && categoryEl) {
+      result.push({ name: nameEl.value.trim(), categoryId: categoryEl.value.trim() });
+    }
+  }
+  return result;
+}
+
+function renderSplitsList() {
+  if (!els.splitsList) return;
+  els.splitsList.innerHTML = '';
+  const placeholder = categoriesCache.length > 0 ? '— Select category —' : '— Set token & budget, then load —';
+  for (let i = 0; i < splitsData.length; i++) {
+    const split = splitsData[i];
+    const row = document.createElement('div');
+    row.className = 'split-row';
+    row.dataset.index = String(i);
+    const nameLabel = document.createElement('label');
+    nameLabel.textContent = 'Name';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.className = 'split-name';
+    nameInput.placeholder = 'e.g. Partner A';
+    nameInput.value = split.name;
+    const catLabel = document.createElement('label');
+    catLabel.textContent = 'Reimbursement category';
+    const catSelect = document.createElement('select');
+    catSelect.className = 'split-category';
+    fillCategorySelect(catSelect, categoriesCache, split.categoryId, placeholder);
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn-remove';
+    removeBtn.textContent = 'Remove';
+    removeBtn.dataset.index = String(i);
+    const nameField = document.createElement('div');
+    nameField.className = 'field';
+    nameField.appendChild(nameLabel);
+    nameField.appendChild(nameInput);
+    const catField = document.createElement('div');
+    catField.className = 'field';
+    catField.appendChild(catLabel);
+    catField.appendChild(catSelect);
+    row.appendChild(nameField);
+    row.appendChild(catField);
+    row.appendChild(removeBtn);
+    els.splitsList.appendChild(row);
+  }
+  els.splitsList.querySelectorAll('.split-name').forEach((el) => {
+    el.addEventListener('change', persistSplitsFromDOM);
+    el.addEventListener('input', persistSplitsFromDOM);
+  });
+  els.splitsList.querySelectorAll('.split-category').forEach((el) => {
+    el.addEventListener('change', persistSplitsFromDOM);
+  });
+  els.splitsList.querySelectorAll('.btn-remove').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const index = parseInt(btn.dataset.index, 10);
+      if (!Number.isNaN(index) && index >= 0 && index < splitsData.length) {
+        splitsData.splice(index, 1);
+        saveSettings({ splits: splitsData }).then(() => showSaved(true));
+        renderSplitsList();
+      }
+    });
+  });
+}
+
+async function persistSplitsFromDOM() {
+  splitsData = getSplitsFromDOM();
+  await saveSettings({ splits: splitsData });
+  showSaved(true);
+}
+
 async function loadCategories() {
   const token = els.ynabToken.value.trim();
   const budgetId = els.budgetId.value.trim();
-  const selectedId = els.partnerCategory.value || (await loadSettings()).partnerCategoryId;
   if (!token || !budgetId) {
-    fillCategorySelect(els.partnerCategory, [], '', '— Set token & budget, then load —');
+    categoriesCache = [];
+    renderSplitsList();
     return;
   }
   showStatus('Loading categories…');
   try {
-    const categories = await fetchCategories(budgetId, token);
-    fillCategorySelect(els.partnerCategory, categories, selectedId, '— Select partner category —');
+    categoriesCache = await fetchCategories(budgetId, token);
     showStatus('');
+    renderSplitsList();
   } catch (e) {
-    fillCategorySelect(els.partnerCategory, [], '', '— Error loading categories —');
+    categoriesCache = [];
     showStatus(e instanceof Error ? e.message : 'Failed to load categories', true);
+    renderSplitsList();
   }
 }
 
 async function init() {
   initElements();
   const settings = await loadSettings();
-  if (!els.ynabToken || !els.budgetId || !els.partnerCategory) return;
+  if (!els.ynabToken || !els.budgetId || !els.splitsList || !els.addSplitBtn) return;
 
   els.ynabToken.value = settings.ynabToken;
-  els.partnerName.value = settings.partnerName;
   els.defaultMemo.value = settings.defaultMemo;
-  if (els.reloadAfterSplit)   els.reloadAfterSplit.checked = settings.reloadAfterSplit !== false;
+  if (els.reloadAfterSplit) els.reloadAfterSplit.checked = settings.reloadAfterSplit !== false;
   if (els.defaultFlag) els.defaultFlag.value = FLAG_COLORS.includes(settings.splitFlagColor) ? settings.splitFlagColor : 'purple';
+
+  splitsData = settings.splits.length > 0 ? [...settings.splits] : [];
 
   els.ynabToken.addEventListener('change', async () => {
     await saveSettings({ ynabToken: els.ynabToken.value });
@@ -189,20 +282,11 @@ async function init() {
     showSaved(true);
     loadCategories();
   });
-  els.partnerName.addEventListener('change', async () => {
-    await saveSettings({ partnerName: els.partnerName.value });
-    showSaved(true);
-  });
   els.defaultMemo.addEventListener('change', async () => {
     await saveSettings({ defaultMemo: els.defaultMemo.value });
     showSaved(true);
   });
-  els.partnerCategory.addEventListener('change', async () => {
-    await saveSettings({ partnerCategoryId: els.partnerCategory.value });
-    showSaved(true);
-  });
   if (els.defaultFlag) {
-    els.defaultFlag.value = FLAG_COLORS.includes(settings.splitFlagColor) ? settings.splitFlagColor : 'purple';
     els.defaultFlag.addEventListener('change', async () => {
       await saveSettings({ splitFlagColor: els.defaultFlag.value });
       showSaved(true);
@@ -211,6 +295,12 @@ async function init() {
   els.reloadAfterSplit.addEventListener('change', async () => {
     await saveSettings({ reloadAfterSplit: els.reloadAfterSplit.checked });
     showSaved(true);
+  });
+
+  els.addSplitBtn.addEventListener('click', () => {
+    splitsData.push({ name: '', categoryId: '' });
+    saveSettings({ splits: splitsData }).then(() => showSaved(true));
+    renderSplitsList();
   });
 
   if (settings.ynabToken) {
@@ -223,11 +313,13 @@ async function init() {
   }
   if (settings.ynabToken && settings.budgetId) {
     try {
-      const categories = await fetchCategories(settings.budgetId, settings.ynabToken);
-      fillCategorySelect(els.partnerCategory, categories, settings.partnerCategoryId, '— Select partner category —');
+      categoriesCache = await fetchCategories(settings.budgetId, settings.ynabToken);
     } catch (_) {
-      fillCategorySelect(els.partnerCategory, [], '', '— Error loading categories —');
+      categoriesCache = [];
     }
+    renderSplitsList();
+  } else {
+    renderSplitsList();
   }
 }
 
