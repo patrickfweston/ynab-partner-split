@@ -91,6 +91,9 @@ A list of partners (or any parties) to split with. For each split you set a **na
 **Default memo**  
 Used for all split transactions unless you type something else in the popup. Use `{partner_names}` in the memo and it will be replaced with the comma-separated list of split names (e.g. "Split with Partner A, Partner B"). For a single split you can use `{partner_name}` to get just that name.
 
+**Append to existing memo**  
+Checkbox. When **checked** (default), the split memo is added after any existing transaction memo, separated by a comma (e.g. "Coffee with Nick, Split with Partner A"). When **unchecked**, the split memo replaces the existing memo. Useful when splitting in bulk so you keep the original note.
+
 **Default flag (for split-by-flag)**  
 When you use **Split by flag**, the extension looks for transactions with a specific YNAB flag color. Here you choose the **default** color (Red, Orange, Yellow, Green, Blue, or Purple). That option is preselected in the popup each time; you can still change it in the popup for a single run (e.g. usually Purple, sometimes Blue).
 
@@ -127,7 +130,10 @@ You can also split transactions by YNAB flag (e.g. purple for “Split with Nick
 2. In YNAB, assign a category to each transaction and add that flag.
 3. In the popup, open the **Split by flag** section. The **Flag to split** dropdown is preselected from your default; change it if you want a different color for this run. Click **Split Flagged Transactions**.
 
-The extension finds all transactions in the **current month** with the chosen flag that are not already split and have a category. Each is split equally between that **existing category** and every partner's reimbursement category, the flag is removed, and the memo is applied.
+The extension finds all transactions in the **current month** with the chosen flag and processes them in two ways:
+
+- **Single-category:** If the transaction has one category (and no subtransactions), it is split equally between that category and every partner's reimbursement category, the flag is removed, and the memo is applied.
+- **Already split:** If the transaction already has subtransactions (e.g. $5 to Groceries, $3 to Household), each portion is split in the same ratio (e.g. 50/50 with one partner). Your share stays in each category; partner shares are summed and applied to the partner reimbursement category(ies). For example: $5 Groceries + $3 Household becomes $2.50 Groceries, $1.50 Household, and $4 to the partner split(s). The flag is removed and the memo is applied.
 
 ---
 

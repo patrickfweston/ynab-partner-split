@@ -279,7 +279,7 @@ async function splitFlaggedTransactions() {
     const sinceDate = getSinceDateFirstOfMonth();
     const transactions = await fetchTransactionsSince(settings.budgetId, sinceDate, settings.ynabToken);
 
-    const toSplit = transactions.filter((tx) => {
+    const toSplitSingle = transactions.filter((tx) => {
       if (!tx.id || tx.deleted) return false;
       if (tx.flag_color !== flagColor) return false;
       if (tx.subtransactions && tx.subtransactions.length > 0) return false;
@@ -288,7 +288,19 @@ async function splitFlaggedTransactions() {
       return true;
     });
 
-    if (toSplit.length === 0) {
+    const toSplitAlreadySplit = transactions.filter((tx) => {
+      if (!tx.id || tx.deleted) return false;
+      if (tx.flag_color !== flagColor) return false;
+      const subs = tx.subtransactions;
+      if (!subs || subs.length === 0) return false;
+      if (tx.amount === 0) return false;
+      const allCategorized = subs.every((sub) => sub.category_id);
+      if (!allCategorized) return false;
+      return true;
+    });
+
+    const toSplitCount = toSplitSingle.length + toSplitAlreadySplit.length;
+    if (toSplitCount === 0) {
       showStatus(`No transactions with the "${flagColor}" flag found (since ${sinceDate}), or they are already split / uncategorized.`, true);
       return;
     }
@@ -300,7 +312,7 @@ async function splitFlaggedTransactions() {
     const splitIds = [];
     let firstError = null;
 
-    for (const tx of toSplit) {
+    for (const tx of toSplitSingle) {
       try {
         const memo = applyMemoBehavior(ourMemo, tx.memo, settings.appendToMemo);
         const amount = tx.amount;
@@ -309,6 +321,39 @@ async function splitFlaggedTransactions() {
           { amount: amounts[0], category_id: tx.category_id },
           ...validSplits.map((s, i) => ({ amount: amounts[i + 1], category_id: s.categoryId })),
         ];
+        const body = {
+          category_id: null,
+          memo,
+          approved: true,
+          flag_color: null,
+          subtransactions,
+        };
+        await updateTransaction(settings.budgetId, tx.id, body, settings.ynabToken);
+        successCount++;
+        splitIds.push(tx.id);
+      } catch (err) {
+        firstError = firstError || err;
+        break;
+      }
+    }
+
+    for (const tx of toSplitAlreadySplit) {
+      try {
+        const memo = applyMemoBehavior(ourMemo, tx.memo, settings.appendToMemo);
+        const yourSubs = [];
+        const partnerSums = new Array(validSplits.length).fill(0);
+        for (const sub of tx.subtransactions) {
+          const parts = splitAmount(sub.amount, numParties);
+          yourSubs.push({ amount: parts[0], category_id: sub.category_id });
+          for (let i = 0; i < validSplits.length; i++) {
+            partnerSums[i] += parts[i + 1];
+          }
+        }
+        const partnerSubs = validSplits.map((s, i) => ({
+          amount: partnerSums[i],
+          category_id: s.categoryId,
+        }));
+        const subtransactions = [...yourSubs, ...partnerSubs];
         const body = {
           category_id: null,
           memo,
