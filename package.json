@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint content.js popup.js options.js",
-    "lint:fix": "eslint content.js popup.js options.js --fix"
+    "lint:fix": "eslint content.js popup.js options.js --fix",
+    "zip": "zip -r ynab-partner-split.zip manifest.json popup.html popup.js options.html options.js content.js style.css"
   },
   "devDependencies": {
     "eslint": "^8.57.0"
