@@ -375,7 +375,11 @@ async function splitFlaggedTransactions() {
     } else if (firstError) {
       showStatus(`Split ${successCount} transaction(s). Then: ${firstError.message}`, true);
     } else {
-      showStatus(`Successfully split ${successCount} flagged transaction(s). Flag removed.`);
+      const baseMsg = `Successfully split ${successCount} flagged transaction(s). Flag removed.`;
+      const refreshNote = !settings.reloadAfterSplit
+        ? ' Yellow rows are pending; refresh YNAB to see the results reflected in your budget.'
+        : '';
+      showStatus(baseMsg + refreshNote);
     }
 
     if (successCount > 0) {
@@ -479,7 +483,11 @@ async function splitSelectedTransactions() {
     } else if (firstError) {
       showStatus(`Split ${successCount} transaction(s). Then: ${firstError.message}`, true);
     } else {
-      showStatus(`Successfully split ${successCount} transaction(s).`);
+      const baseMsg = `Successfully split ${successCount} transaction(s).`;
+      const refreshNote = !settings.reloadAfterSplit
+        ? ' Yellow rows are pending; refresh YNAB to see the results reflected in your budget.'
+        : '';
+      showStatus(baseMsg + refreshNote);
     }
 
     if (successCount > 0 && result.tabId) {
