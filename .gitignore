@@ -4,5 +4,6 @@ node_modules/
 *.tgz
 .env
 .env.local
+.chrome-webstore.env
 *.crx
 *.pem
