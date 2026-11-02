@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "YNAB Partner Split",
   "description": "Split selected YNAB transactions 50/50 between your category and a partner reimbursement category.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "permissions": ["storage", "tabs"],
   "host_permissions": [
     "https://app.ynab.com/*",

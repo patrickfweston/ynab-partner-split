@@ -18,6 +18,13 @@ const STORAGE_KEYS = {
   userCategoryId: 'userCategoryId',
   reloadAfterSplit: 'reloadAfterSplit',
   splitFlagColor: 'splitFlagColor',
+  flagSplitDateRange: 'flagSplitDateRange',
+};
+
+/** Split-by-flag lookback: last 90 days (default) or current calendar month only. */
+const FLAG_SPLIT_DATE_RANGES = {
+  days90: '90days',
+  currentMonth: 'currentMonth',
 };
 
 /** YNAB flag colors (API values). Flag #6 = purple. */
@@ -58,6 +65,10 @@ async function loadSettings() {
     userCategoryId: result[STORAGE_KEYS.userCategoryId] ?? '',
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
+    flagSplitDateRange:
+      result[STORAGE_KEYS.flagSplitDateRange] === FLAG_SPLIT_DATE_RANGES.currentMonth
+        ? FLAG_SPLIT_DATE_RANGES.currentMonth
+        : FLAG_SPLIT_DATE_RANGES.days90,
   };
 }
 
@@ -243,12 +254,28 @@ function splitAmount(amount, numParties) {
   return amounts;
 }
 
-/** First day of current month in YYYY-MM-DD for fetching transactions. */
-function getSinceDateFirstOfMonth() {
-  const d = new Date();
+/** Format a Date as YYYY-MM-DD (local calendar). */
+function formatDateYmd(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
-  return `${y}-${m}-01`;
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * YNAB since_date for split-by-flag, from Options (default: 90 days ago).
+ * @param {'90days'|'currentMonth'} range
+ */
+function getSinceDateForFlagSplit(range) {
+  if (range === FLAG_SPLIT_DATE_RANGES.currentMonth) {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
+  }
+  const d = new Date();
+  d.setDate(d.getDate() - 90);
+  return formatDateYmd(d);
 }
 
 async function splitFlaggedTransactions() {
@@ -276,7 +303,7 @@ async function splitFlaggedTransactions() {
   if (els.splitBtn) els.splitBtn.disabled = true;
 
   try {
-    const sinceDate = getSinceDateFirstOfMonth();
+    const sinceDate = getSinceDateForFlagSplit(settings.flagSplitDateRange);
     const transactions = await fetchTransactionsSince(settings.budgetId, sinceDate, settings.ynabToken);
 
     const toSplitSingle = transactions.filter((tx) => {

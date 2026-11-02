@@ -24,7 +24,7 @@ The extension assumes you **categorize your share** of shared spending to specif
 You can split in two ways:
 
 1. **Split selected rows** — In the YNAB register, select one or more transactions, then in the extension popup choose “Category for your share” and click **Split Selected Transactions**. Your share goes to the category you picked; each partner's share goes to the reimbursement category you set for that split in Options. The amount is divided equally among you and all configured splits.
-2. **Split by flag** — Assign a category and a YNAB flag (e.g. purple) to transactions as you go. When you're ready, open the popup, choose that flag, and click **Split Flagged Transactions**. The extension finds all flagged transactions in the current month that aren't already split, splits each equally between the existing category and every partner's category, and removes the flag.
+2. **Split by flag** — Assign a category and a YNAB flag (e.g. purple) to transactions as you go. When you're ready, open the popup, choose that flag, and click **Split Flagged Transactions**. The extension finds all flagged transactions in the date range you set in Options (default: last 90 days) that aren't already split, splits each equally between the existing category and every partner's category, and removes the flag.
 
 <img src="images/popup.png" alt="Extension popup" width="400">
 
@@ -97,6 +97,9 @@ Checkbox. When **checked** (default), the split memo is added after any existing
 **Default flag (for split-by-flag)**  
 When you use **Split by flag**, the extension looks for transactions with a specific YNAB flag color. Here you choose the **default** color (Red, Orange, Yellow, Green, Blue, or Purple). That option is preselected in the popup each time; you can still change it in the popup for a single run (e.g. usually Purple, sometimes Blue).
 
+**Split by flag — date range**  
+Controls how far back **Split Flagged Transactions** searches. **Last 90 days** (default) includes any flagged transaction from the past 90 calendar days. **Current month only** limits the search to transactions on or after the first day of the current month.
+
 **Reload YNAB tab after split**  
 Checkbox. When **checked**, the extension reloads the YNAB tab after splitting so you see the updated transactions right away. When **unchecked**, the tab is not reloaded (you can refresh manually, or the extension can highlight the changed rows if you have that on).
 
@@ -130,7 +133,7 @@ You can also split transactions by YNAB flag (e.g. purple for “Split with Nick
 2. In YNAB, assign a category to each transaction and add that flag.
 3. In the popup, open the **Split by flag** section. The **Flag to split** dropdown is preselected from your default; change it if you want a different color for this run. Click **Split Flagged Transactions**.
 
-The extension finds all transactions in the **current month** with the chosen flag and processes them in two ways:
+The extension finds all transactions in the configured **date range** (see **Split by flag — date range** in Options) with the chosen flag and processes them in two ways:
 
 - **Single-category:** If the transaction has one category (and no subtransactions), it is split equally between that category and every partner's reimbursement category, the flag is removed, and the memo is applied.
 - **Already split:** If the transaction already has subtransactions (e.g. $5 to Groceries, $3 to Household), each portion is split in the same ratio (e.g. 50/50 with one partner). Your share stays in each category; partner shares are summed and applied to the partner reimbursement category(ies). For example: $5 Groceries + $3 Household becomes $2.50 Groceries, $1.50 Household, and $4 to the partner split(s). The flag is removed and the memo is applied.

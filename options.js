@@ -16,6 +16,12 @@ const STORAGE_KEYS = {
   appendToMemo: 'appendToMemo',
   reloadAfterSplit: 'reloadAfterSplit',
   splitFlagColor: 'splitFlagColor',
+  flagSplitDateRange: 'flagSplitDateRange',
+};
+
+const FLAG_SPLIT_DATE_RANGES = {
+  days90: '90days',
+  currentMonth: 'currentMonth',
 };
 
 const FLAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
@@ -30,6 +36,7 @@ function initElements() {
     budgetId: document.getElementById('budget-id'),
     defaultMemo: document.getElementById('default-memo'),
     defaultFlag: document.getElementById('default-flag'),
+    flagSplitDateRange: document.getElementById('flag-split-date-range'),
     appendToMemo: document.getElementById('append-to-memo'),
     reloadAfterSplit: document.getElementById('reload-after-split'),
     splitsList: document.getElementById('splits-list'),
@@ -58,6 +65,10 @@ async function loadSettings() {
     appendToMemo: result[STORAGE_KEYS.appendToMemo] !== false,
     reloadAfterSplit: result[STORAGE_KEYS.reloadAfterSplit] !== false,
     splitFlagColor: result[STORAGE_KEYS.splitFlagColor] ?? 'purple',
+    flagSplitDateRange:
+      result[STORAGE_KEYS.flagSplitDateRange] === FLAG_SPLIT_DATE_RANGES.currentMonth
+        ? FLAG_SPLIT_DATE_RANGES.currentMonth
+        : FLAG_SPLIT_DATE_RANGES.days90,
   };
 }
 
@@ -273,6 +284,12 @@ async function init() {
   if (els.appendToMemo) els.appendToMemo.checked = settings.appendToMemo !== false;
   if (els.reloadAfterSplit) els.reloadAfterSplit.checked = settings.reloadAfterSplit !== false;
   if (els.defaultFlag) els.defaultFlag.value = FLAG_COLORS.includes(settings.splitFlagColor) ? settings.splitFlagColor : 'purple';
+  if (els.flagSplitDateRange) {
+    els.flagSplitDateRange.value =
+      settings.flagSplitDateRange === FLAG_SPLIT_DATE_RANGES.currentMonth
+        ? FLAG_SPLIT_DATE_RANGES.currentMonth
+        : FLAG_SPLIT_DATE_RANGES.days90;
+  }
 
   splitsData = settings.splits.length > 0 ? [...settings.splits] : [];
 
@@ -293,6 +310,16 @@ async function init() {
   if (els.defaultFlag) {
     els.defaultFlag.addEventListener('change', async () => {
       await saveSettings({ splitFlagColor: els.defaultFlag.value });
+      showSaved(true);
+    });
+  }
+  if (els.flagSplitDateRange) {
+    els.flagSplitDateRange.addEventListener('change', async () => {
+      const value =
+        els.flagSplitDateRange.value === FLAG_SPLIT_DATE_RANGES.currentMonth
+          ? FLAG_SPLIT_DATE_RANGES.currentMonth
+          : FLAG_SPLIT_DATE_RANGES.days90;
+      await saveSettings({ flagSplitDateRange: value });
       showSaved(true);
     });
   }

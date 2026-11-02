@@ -62,6 +62,14 @@
           <option value="purple">Purple</option>
         </select>
       </div>
+      <div class="field">
+        <label for="flag-split-date-range">Split by flag — date range</label>
+        <select id="flag-split-date-range" aria-describedby="flag-split-date-range-hint">
+          <option value="90days">Last 90 days</option>
+          <option value="currentMonth">Current month only</option>
+        </select>
+        <span id="flag-split-date-range-hint" class="field-hint">Which flagged transactions to include when you run Split Flagged Transactions. Default: last 90 days.</span>
+      </div>
       <div class="field field-checkbox">
         <span class="field-checkbox-heading">Append to existing memo</span>
         <span class="field-hint" id="append-to-memo-hint">When enabled, the split memo is added after any existing memo (with a comma). When disabled, the split memo replaces the existing memo. Default: append.</span>
